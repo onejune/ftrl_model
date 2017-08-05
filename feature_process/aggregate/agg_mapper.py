@@ -298,14 +298,10 @@ def run():
  
 if __name__ == "__main__":
     global g_log_type, g_label
-    #g_log_type = os.environ.get('log_type')
-    g_log_type = 'install'
+    g_log_type = os.environ.get('log_type')
+    #g_log_type = 'install'
     get_publisher()
     get_offline_data()
     get_feature_map()
     run()
-
-
-
-
 
