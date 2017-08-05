@@ -1,0 +1,4 @@
+type=command
+retries=1
+dependencies=click,click_cpc,ins
+command=sh run_merge.sh cvr

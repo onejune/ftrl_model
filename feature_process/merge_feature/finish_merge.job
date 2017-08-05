@@ -1,0 +1,4 @@
+type=command
+retries=1
+dependencies=merge_ctr,merge_cvr
+command=echo "successfully."

@@ -1,0 +1,3 @@
+type=command
+retries=3
+command=sh -x run_aggregate.sh install

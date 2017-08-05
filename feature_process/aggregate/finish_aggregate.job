@@ -1,0 +1,4 @@
+type=command
+retries=1
+dependencies=click,click_cpc,ins,imp,imp_cpc,only_imp
+command=echo "successfully."
