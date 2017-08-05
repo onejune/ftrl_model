@@ -58,7 +58,7 @@ if [ $? -ne 0 ]; then
 fi
 
 cache_file=s3://mob-emr-test/shenlei.zhong/tmp_job/imp/m_ftrl_offline_feature.dat
-
+feature_conf=s3://mob-emr-test/wanjun/m_sys_model/feature_config/feature_map.conf
 output_path="s3://mob-emr-test/wanjun/m_sys_model/feature_process/$log_names/${time_now:0:8}/$time_now/"
 hadoop fs -rmr ${output_path}
 
@@ -74,6 +74,7 @@ hadoop-streaming \
 -output ${output_path} \
 -cacheArchive s3://mob-emr/data/will/tools/python272.tar.gz#python27 \
 -cacheFile $cache_file#m_ftrl_offline_feature.dat \
+-cacheFile $feature_conf#feature_map.conf \
 -cacheFile s3://mob-emr-test/wanjun/adnserver_offline/offline_data/${last_hour:0:8}/${last_hour}/pub_unit.cfg#pub_unit.cfg \
 -file agg_mapper.py \
 -cmdenv "log_type=$1" \

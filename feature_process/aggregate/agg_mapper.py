@@ -34,9 +34,7 @@ def get_feature_map():
     fin = open('./feature_map.conf')
     for line in fin:
         line = line.strip()
-        if not line:
-            continue
-        if line.startswith('#'):
+        if not line or line.startswith('#'):
             continue
         arr = line.split(' ')
         brr = arr[0].split('#')
@@ -96,33 +94,28 @@ def get_app_features(app_id):
     app_info = app_cate_feature.get(app_id)
     if not app_info:
         return ['appid_category=none']
-    app_feature_list = app_info
-    return app_feature_list
+    return app_info
 
 
 #extract single feature from log line
 def extract_single_feature(part, feature_map):
-    normal_feature_list = []
     app_feature_list = []
     #单维特征
     date_s = part[0]
     week_s = datetime.datetime(int(date_s[0:4]), int(date_s[4:6]), int(date_s[6:])).strftime("%w")
     week_h = 'week=' + week_s
     feature_map['week'] = week_h
-    normal_feature_list.append(week_h)
     time_s = part[1].strip()
     if len(time_s) != 6:
         return None
     hour_s = time_s[0:2]
     hour_h = 'hour=' + hour_s
     feature_map['hour'] = hour_h
-    normal_feature_list.append(hour_h)
     publisher_id = part[3]
 
     app_id = part[4]
     app_id_h = 'app_id=' + app_id
     feature_map['app_id'] = app_id_h
-    normal_feature_list.append(app_id_h)
     
     #app category features
     app_feature_list = get_app_features(app_id)
@@ -131,17 +124,15 @@ def extract_single_feature(part, feature_map):
     unit_id = part[5]
     unit_id_h = 'unit_id=' + unit_id
     feature_map['unit_id'] = unit_id_h
-    normal_feature_list.append(unit_id_h)
     if publisher_id + '_' + app_id + '_' + unit_id not in g_publisher:
         return None
     advertiser_id = part[6]
     advertiser_id_h = 'adv=' + advertiser_id
     feature_map['advertiser_id'] = advertiser_id_h
-    normal_feature_list.append(advertiser_id_h)
+
     ad_type = part[10]
     ad_type_h = 'ad_type=' + ad_type
     feature_map['ad_type'] = ad_type_h
-    normal_feature_list.append(ad_type_h)
     campaigns = ''
     if g_log_type == 'only_impression':
         if 'wall' not in ad_type:
@@ -156,33 +147,27 @@ def extract_single_feature(part, feature_map):
     image_size = part[11]
     image_size_h = 'image_size=' + image_size
     feature_map['image_size'] = image_size_h
-    normal_feature_list.append(image_size_h)
     
     platform = part[13]
     platform_h = 'platform=' + platform
     feature_map['platform'] = platform_h
-    normal_feature_list.append(platform_h)
     
     os_version = part[14]
     os_version_h = 'os_version=' + os_version
     feature_map['os_version'] = os_version_h
-    normal_feature_list.append(os_version_h)
     
     sdk_version = part[15]
     sdk_version_h = 'sdk_version=' + sdk_version
     feature_map['sdk_version'] = sdk_version_h
-    normal_feature_list.append(sdk_version_h)
     
     device_model = part[16]
     device_model_h = 'device_model=' + device_model
     feature_map['device_model'] = device_model_h
-    normal_feature_list.append(device_model_h)
     
     #screen_size = part[17]
     orientation = part[18]
     orientation_h = 'orientation=' + orientation
     feature_map['orientation'] = orientation_h
-    normal_feature_list.append(orientation_h)
     
     country = part[19]
     if re.match('^[a-zA-Z]+$', country) == None:
@@ -190,22 +175,18 @@ def extract_single_feature(part, feature_map):
     country = country.lower()
     country_h = 'country=' + country
     feature_map['country_code'] = country_h
-    normal_feature_list.append(country_h)
     
     language = part[20]
     language_h = 'language=' + language
     feature_map['language'] = language_h
-    normal_feature_list.append(language_h)
     
     network_type = part[21]
     network_type_h = 'network_type=' + network_type
     feature_map['network_type'] = network_type_h
-    normal_feature_list.append(network_type_h)
     
     mcc_mnc = part[22]
     mcc_mnc_h = 'mcc_mnc=' + mcc_mnc
     feature_map['mcc_mnc'] = mcc_mnc_h
-    normal_feature_list.append(mcc_mnc_h)
     
     #strategy
     extra3 = part[25]
@@ -215,7 +196,6 @@ def extract_single_feature(part, feature_map):
     device_brand = part[45]
     device_brand_h = 'device_brand=' + device_brand
     feature_map['device_brand'] = device_brand_h
-    normal_feature_list.append(device_brand_h)
     
     #only reserve m system data
     if g_log_type == 'install' and (extra9 == '2' or redu == '2'):
@@ -245,9 +225,7 @@ def get_campaign_features(campaign_id, feature_map):
         
     
 def run():
-    fin = open('install_log')
-    #for line in sys.stdin:
-    for line in fin:
+    for line in sys.stdin:
         feature_map = {}
         cur_stamp = str(time.mktime(datetime.datetime.now().timetuple()))
         part = line.strip().split("\t")         
@@ -269,12 +247,11 @@ def run():
                 if not f_lst:
                     continue
                 result_list = ['']
-                #parse each feature name in rule
+                #traverse each feature name in rule
                 for f_name in f_lst:
-                    #flap the features which the type is list
+                    #flap the features whose the type is list
                     if f_name == 'appid_category' or f_name == 'dmp_tag':
                         cate_list = feature_map.get(f_name)
-                        print f_name, cate_list
                         if not cate_list:
                             cate_list = [f_name + '=none']
                         r_lst = result_list
@@ -299,9 +276,12 @@ def run():
 if __name__ == "__main__":
     global g_log_type, g_label
     g_log_type = os.environ.get('log_type')
-    #g_log_type = 'install'
     get_publisher()
     get_offline_data()
     get_feature_map()
     run()
+
+
+
+
 
