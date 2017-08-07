@@ -49,14 +49,6 @@ input_path="s3://mob-ad/adn/tracking-v3/$log_names/${last_hour:0:10}/*/${last_ho
 echo $calculate_days
 echo $input_path
 
-last_hour=$(date +%Y%m%d%H -d "1 hour ago")
-cache_file=s3://mob-emr-test/wanjun/adnserver_offline/offline_data/${time_now:0:8}/${time_now}/offline_data.dat
-hadoop fs -test -e $cache_file
-if [ $? -ne 0 ]; then
-    echo "$cache_file not exists!"
-	cache_file=s3://mob-emr-test/wanjun/adnserver_offline/offline_data/${last_hour:0:8}/${last_hour}/offline_data.dat
-fi
-
 cache_file=s3://mob-emr-test/shenlei.zhong/tmp_job/imp/m_ftrl_offline_feature.dat
 feature_conf=s3://mob-emr-test/wanjun/m_sys_model/feature_config/feature_map.conf
 output_path="s3://mob-emr-test/wanjun/m_sys_model/feature_process/$log_names/${time_now:0:8}/$time_now/"
@@ -67,7 +59,7 @@ last_hour=$(date +%Y%m%d%H -d "3 hour ago")
 hadoop-streaming \
 -D mapreduce.job.name="${job_name}" \
 -D mapred.reduce.tasks=300 \
--D mapreduce.reduce.memory.mb=3000 \
+-D mapreduce.reduce.memory.mb=5000 \
 -D mapred.output.key.comparator.class=org.apache.hadoop.mapred.lib.KeyFieldBasedComparator \
 -D mapred.output.compress=false \
 -input ${input_path} \
@@ -77,6 +69,7 @@ hadoop-streaming \
 -cacheFile $feature_conf#feature_map.conf \
 -cacheFile s3://mob-emr-test/wanjun/adnserver_offline/offline_data/${last_hour:0:8}/${last_hour}/pub_unit.cfg#pub_unit.cfg \
 -file agg_mapper.py \
+-file agg_reducer.py \
 -cmdenv "log_type=$1" \
 -mapper "python agg_mapper.py" \
--reducer "cat"
+-reducer "python agg_reducer.py"

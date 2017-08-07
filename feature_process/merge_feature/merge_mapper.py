@@ -13,6 +13,19 @@ def feature_hash(string):
     #print 'hash\t' + string + '\t' + hashValue
     return hashValue
 
+def get_feature_map():
+    global feature_conf_list
+    feature_conf_list = []
+    fin = open('feature_map.conf')
+    for line in fin:
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        arr = line.split(' ')
+        if len(arr) == 1 or arr[1].strip() == g_feature_type:
+            feature_conf_list.append(arr[0])
+    fin.close()
+
 def run():
     for line in sys.stdin:
         line = line.strip()
@@ -38,7 +51,11 @@ def run():
                 label = '1'
         ps = stamp + '\t' + label
         for fea in features:
-            ps += '\t' + feature_hash(fea) + ':1'
+            arr = fea.split('\001')
+            brr = [b.split('=')[0] for b in arr]
+            s = '#'.join(brr)
+            if s in feature_conf_list:
+                ps += '\t' + feature_hash(fea) + ':1'
         print ps
         
         
@@ -46,4 +63,5 @@ def run():
 if __name__ == "__main__":
     global g_feature_type
     g_feature_type = os.environ.get('feature_type')
+    get_feature_map()
     run()

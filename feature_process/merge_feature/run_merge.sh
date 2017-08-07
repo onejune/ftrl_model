@@ -38,7 +38,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo $input_path
-
+feature_conf=s3://mob-emr-test/wanjun/m_sys_model/feature_config/feature_map.conf
 output_path="s3://mob-emr-test/wanjun/m_sys_model/feature_merge_$feature_type/${time_now:0:8}/$time_now/"
 hadoop fs -rmr ${output_path}
 
@@ -50,6 +50,7 @@ hadoop-streaming \
 -D mapred.output.compress=false \
 -input ${input_path} \
 -output ${output_path} \
+-cacheFile $feature_conf#feature_map.conf \
 -cacheArchive s3://mob-emr/data/will/tools/python272.tar.gz#python27 \
 -file merge_mapper.py \
 -file merge_reducer.py \
